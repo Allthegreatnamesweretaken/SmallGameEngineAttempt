@@ -179,10 +179,7 @@ private:
 	bool _jumped = false;
 //	XMFLOAT3 _firstObjectLookDirection = XMFLOAT3(0.0f, 0.0f, 0.0f); // Initial look direction
 
-	bool _decelerateLeft = false;
 	bool _decelerateForward = false;
-	bool _decelerateRight = false;
-	bool _decelerateBackward = false;
 
 	// Camera variables
 	XMFLOAT3 _cameraPosition = XMFLOAT3(0.0f, 0.0f, 0.0f); // Initial camera / Redundant Value.

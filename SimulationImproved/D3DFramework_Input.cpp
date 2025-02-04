@@ -137,6 +137,9 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 	case WM_KEYUP:
 		switch (wParam) {
+		case 'W':
+			app._decelerateForward = true;
+			break;
 		default:
 			break;
 		}
