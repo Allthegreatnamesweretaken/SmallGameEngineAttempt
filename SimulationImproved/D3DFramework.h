@@ -208,6 +208,7 @@ private:
    
 	bool isPlayerLookingAtWallOrFloor();
 
+	bool cursor = true;
 
 	//Speed crap
 	float _acceleration = 10.0f; // Acceleration rate

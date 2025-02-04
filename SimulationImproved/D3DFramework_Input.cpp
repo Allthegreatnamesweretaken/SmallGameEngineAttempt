@@ -53,8 +53,20 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_RBUTTONDOWN:
 	{
 		// Release the cursor to allow free movement
-		app.releaseCursor();
-		app._mouseCaptured = true;
+		
+		if (app.cursor)
+		{
+			app.releaseCursor();
+			app.cursor = false;
+			app._mouseCaptured = true;
+		}
+		else
+		{
+			app.lockCursor();
+			app.cursor = true;
+			app._mouseCaptured = false;
+		}
+		
 	}
 	break;
 
@@ -95,7 +107,9 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 				app._firstObjectHorizontalVelocity = XMVectorGetX(lookDirection) * (app._moveSpeed + app.sprintFactor);
 				app._decelerateForward = false;
 			}
-
+			break;
+		case 'S':
+			app._decelerateForward = true;
 			break;
 		case VK_ESCAPE:
 			msg == "ESC pressed";
@@ -141,9 +155,7 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 	case WM_KEYUP:
 		switch (wParam) {
-		case 'W':
-			app._decelerateForward = true;
-			break;
+		
 		default:
 			break;
 		}
