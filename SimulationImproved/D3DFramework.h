@@ -43,6 +43,15 @@ struct ConstantBuffer
 
 };
 
+struct Ray {
+	XMFLOAT3 position;
+	XMFLOAT3 direction;
+
+	bool Intersects(const BoundingBox& box, float& distance) const {
+		return box.Intersects(XMLoadFloat3(&position), XMLoadFloat3(&direction), distance);
+	}
+};
+
 class D3DFramework final {
 
 	HINSTANCE _hInst = nullptr;
@@ -173,7 +182,7 @@ private:
 	const float _groundLevel = 0.0f; // Ground level
 	const float _moveSpeed = 5.0f; // Horizontal movement speed
 	float sprintFactor = 0.0f;
-	const float _decelerationFactor = 0.95f; // Deceleration factor
+	const float _decelerationFactor = 0.2f; // Deceleration factor
 	float _zoomFactor = 1.0f; // Zoom factor for the camera
 	bool _isOnSurface = false;
 	bool _jumped = false;
@@ -196,6 +205,9 @@ private:
 	// Add these methods
 	void processMouseInput(float deltaTime);
 	void processKeyboardInput(float deltaTime);
+   
+	bool isPlayerLookingAtWallOrFloor();
+
 
 	//Speed crap
 	float _acceleration = 10.0f; // Acceleration rate

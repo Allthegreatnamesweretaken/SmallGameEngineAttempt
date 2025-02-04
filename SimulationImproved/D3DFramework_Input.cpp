@@ -54,22 +54,26 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	{
 		// Release the cursor to allow free movement
 		app.releaseCursor();
-		app._mouseCaptured = false;
+		app._mouseCaptured = true;
 	}
 	break;
 
 	case WM_LBUTTONDOWN:
 	{
-		XMVECTOR lookDirection = XMVector3Normalize(XMVectorSet(
-			cosf(app._cameraPitch) * sinf(app._cameraYaw),
-			sinf(app._cameraPitch),
-			cosf(app._cameraPitch) * cosf(app._cameraYaw),
-			0.0f
-		));
+		// Check if the player is near a wall or floor and looking at it
+		if (app.isPlayerLookingAtWallOrFloor()) {
+			XMVECTOR lookDirection = XMVector3Normalize(XMVectorSet(
+				cosf(app._cameraPitch) * sinf(app._cameraYaw),
+				sinf(app._cameraPitch),
+				cosf(app._cameraPitch) * cosf(app._cameraYaw),
+				0.0f
+			));
 
-		app._firstObjectHorizontalVelocity = -XMVectorGetX(lookDirection) * 20;
-		app._firstObjectHorizontalVelocityZ = -XMVectorGetZ(lookDirection) * 20;
-		app._firstObjectVerticalVelocity = -XMVectorGetY(lookDirection) * 20;
+			// Apply the velocity changes
+			app._firstObjectHorizontalVelocity = -XMVectorGetX(lookDirection) * 20;
+			app._firstObjectHorizontalVelocityZ = -XMVectorGetZ(lookDirection) * 20;
+			app._firstObjectVerticalVelocity = -XMVectorGetY(lookDirection) * 20;
+		}
 	}
 	break;
 
@@ -150,4 +154,62 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	}
 
 	return 0;
+}
+
+#include "D3DFramework.h"
+
+// ... existing code ...
+
+bool D3DFramework::isPlayerLookingAtWallOrFloor() {
+	// Define the maximum distance to check
+	const float maxViewDistance = 5.0f; // Adjust as needed
+
+	// Compute the player's look direction
+	XMVECTOR lookDirection = XMVector3Normalize(XMVectorSet(
+		cosf(_cameraPitch) * sinf(_cameraYaw),
+		sinf(_cameraPitch),
+		cosf(_cameraPitch) * cosf(_cameraYaw),
+		0.0f
+	));
+
+	// Define the ray origin (player's position) and direction
+	XMVECTOR rayOrigin = XMLoadFloat3(&_firstObjectPosition);
+	XMVECTOR rayDirection = lookDirection;
+
+	// Create the ray
+	Ray playerRay;
+	XMStoreFloat3(&playerRay.position, rayOrigin);
+	XMStoreFloat3(&playerRay.direction, rayDirection);
+
+	// **Check for intersection with the floor**
+	if (rayDirection.m128_f32[1] < 0.0f) { // Looking downward
+		float distanceToGround = (_firstObjectPosition.y - _groundLevel) / -rayDirection.m128_f32[1];
+		if (distanceToGround >= 0.0f && distanceToGround <= maxViewDistance) {
+			return true;
+		}
+	}
+
+	// **Check for intersection with walls or other objects**
+	for (size_t i = 0; i < _models.size(); ++i) {
+		// If your player is included in _models, make sure to skip it
+		// Here, we assume the player is not part of _models
+
+		// Get the object's bounding box
+		BoundingBox objectBox = _models[i].boundingBox;
+
+		// Transform the object's bounding box to world coordinates
+		BoundingBox objectBoxWorld;
+		objectBox.Transform(objectBoxWorld, _WorldMatrices[i]);
+
+		// Perform ray-box intersection
+		float distance = 0.0f;
+		if (playerRay.Intersects(objectBoxWorld, distance)) {
+			if (distance >= 0.0f && distance <= maxViewDistance) {
+				return true;
+			}
+		}
+	}
+
+	// No wall or floor is within the player's view
+	return false;
 }

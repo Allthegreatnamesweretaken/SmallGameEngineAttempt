@@ -68,21 +68,21 @@ void D3DFramework::updateWorldMatrix(float deltaTime) {
 	//Need to decide on control changes?
 	//_decelerateForward
 	//Flipped
-	//if (_isOnSurface)
-	//{
-	//	if (_decelerateForward) {
-	//		_firstObjectHorizontalVelocity = _firstObjectHorizontalVelocity * _decelerationFactor;
+	if (_isOnSurface)
+	{
+		if (_decelerateForward) {
+			_firstObjectHorizontalVelocity = _firstObjectHorizontalVelocity * _decelerationFactor;
 
-	//		//fun
-	//		//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
+			//fun
+			//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
 
-	//	}
+		}
 
 
-	//	if (_decelerateForward) {
-	//		_firstObjectHorizontalVelocityZ = _firstObjectHorizontalVelocityZ * _decelerationFactor;
-	//	}
-	//}
+		if (_decelerateForward) {
+			_firstObjectHorizontalVelocityZ = _firstObjectHorizontalVelocityZ * _decelerationFactor;
+		}
+	}
 	
 		//fun
 		//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
