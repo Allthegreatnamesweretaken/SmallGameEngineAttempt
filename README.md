@@ -1,8 +1,17 @@
-Recent Update: Moved All code into different fies main code went from 1200 -> 114 lines made it way more readable, will look into making it more efficient if needed / the .h files but this okay for now. 
+---Updated---
+-Correctly made it so that the game can determin when the player is looking at an object and lets them be able to use the launch (Need to make sure i set the distance properly.
 
-Need to Do list:
 
 ---Priority---
+-Need to not make the scope too huge this is meant to be a very small project that i can remake or edit in the future.
+
+Next Milestone >> --Very Simple Demo--
+-Need a very basic menu to start the game, this will be the first thing that the player sees.
+-Need a simple level for testing purposes, this will be the first level that the player will play, this will be given in the demo for people to test for me.
+-Need to add a way for the game to end like a win condition probably will be an object they hit thagt gives them a you win screen?
+--Need to have it tested want the game to actually be fun to play, if needed to change things do so but keep it simple.
+
+--Need to add a way to load different levels without errors, either through doing it in a menu and stopping the player or loading everything and only setting the specific shader when the player loads the level?
 - Need to work on redoing everything seperating it all into different files, this could help efficiency and make it easier to read, will also help with the fact that the code is getting very long.
 - Need to refine the shaders (if i am keeping them) as the way they are loaded and managed currently is not efficient.
 - File manager, for simplicity of being able to find parts of code easier, as in files for shaders etc etc.

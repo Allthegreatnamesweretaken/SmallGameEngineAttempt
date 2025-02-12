@@ -72,8 +72,9 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 
 	case WM_LBUTTONDOWN:
 	{
+        ObjModel* target = app.getLookingAtObject();
+		if (target) {
 		// Check if the player is near a wall or floor and looking at it
-		if (app.isPlayerLookingAtWallOrFloor()) {
 			XMVECTOR lookDirection = XMVector3Normalize(XMVectorSet(
 				cosf(app._cameraPitch) * sinf(app._cameraYaw),
 				sinf(app._cameraPitch),
@@ -82,9 +83,9 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 			));
 
 			// Apply the velocity changes
-			app._firstObjectHorizontalVelocity = -XMVectorGetX(lookDirection) * 20;
-			app._firstObjectHorizontalVelocityZ = -XMVectorGetZ(lookDirection) * 20;
-			app._firstObjectVerticalVelocity = -XMVectorGetY(lookDirection) * 20;
+			app._firstObjectHorizontalVelocity += -XMVectorGetX(lookDirection) * 20;
+			app._firstObjectHorizontalVelocityZ += -XMVectorGetZ(lookDirection) * 20;
+			app._firstObjectVerticalVelocity += -XMVectorGetY(lookDirection) * 20;
 		}
 	}
 	break;
@@ -109,7 +110,9 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 			}
 			break;
 		case 'S':
-			app._decelerateForward = true;
+			//app._decelerateForward = true;
+			app._firstObjectHorizontalVelocity = 0.0f;
+			app._firstObjectHorizontalVelocityZ = 0.0f;
 			break;
 		case VK_ESCAPE:
 			msg == "ESC pressed";
@@ -168,60 +171,52 @@ LRESULT CALLBACK D3DFramework::wndProc(HWND hWnd, UINT message, WPARAM wParam, L
 	return 0;
 }
 
-#include "D3DFramework.h"
+ObjModel* D3DFramework::getLookingAtObject(float maxDistance) {
+	// Calculate the look direction based on camera yaw and pitch
+	DirectX::XMVECTOR lookDir = DirectX::XMVector3Normalize(
+		DirectX::XMVectorSet(
+			cosf(_cameraPitch) * sinf(_cameraYaw),
+			sinf(_cameraPitch),
+			cosf(_cameraPitch) * cosf(_cameraYaw),
+			0.0f
+		)
+	);
 
-// ... existing code ...
+	// Define a small epsilon to offset the ray origin
+	const float epsilon = 0.1f;
 
-bool D3DFramework::isPlayerLookingAtWallOrFloor() {
-	// Define the maximum distance to check
-	const float maxViewDistance = 5.0f; // Adjust as needed
+	// Define the ray origin slightly offset in the look direction to avoid starting inside bounding boxes
+	DirectX::XMVECTOR rayOrigin = DirectX::XMVectorAdd(
+		DirectX::XMLoadFloat3(&_cameraPosition),
+		DirectX::XMVectorScale(lookDir, epsilon)
+	);
 
-	// Compute the player's look direction
-	XMVECTOR lookDirection = XMVector3Normalize(XMVectorSet(
-		cosf(_cameraPitch) * sinf(_cameraYaw),
-		sinf(_cameraPitch),
-		cosf(_cameraPitch) * cosf(_cameraYaw),
-		0.0f
-	));
+	DirectX::XMVECTOR rayDirection = lookDir;
 
-	// Define the ray origin (player's position) and direction
-	XMVECTOR rayOrigin = XMLoadFloat3(&_firstObjectPosition);
-	XMVECTOR rayDirection = lookDirection;
+	ObjModel* closestObject = nullptr;
+	float closestDistance = maxDistance;
 
-	// Create the ray
-	Ray playerRay;
-	XMStoreFloat3(&playerRay.position, rayOrigin);
-	XMStoreFloat3(&playerRay.direction, rayDirection);
+	for (auto& obj : _models) {
+		// Skip the player's own model and any other non-interactive models if necessary
+		if (&obj == &_models[0] || &obj == &_models[1] || &obj == &_models[2]) continue;
 
-	// **Check for intersection with the floor**
-	if (rayDirection.m128_f32[1] < 0.0f) { // Looking downward
-		float distanceToGround = (_firstObjectPosition.y - _groundLevel) / -rayDirection.m128_f32[1];
-		if (distanceToGround >= 0.0f && distanceToGround <= maxViewDistance) {
-			return true;
-		}
-	}
-
-	// **Check for intersection with walls or other objects**
-	for (size_t i = 0; i < _models.size(); ++i) {
-		// If your player is included in _models, make sure to skip it
-		// Here, we assume the player is not part of _models
-
-		// Get the object's bounding box
-		BoundingBox objectBox = _models[i].boundingBox;
-
-		// Transform the object's bounding box to world coordinates
-		BoundingBox objectBoxWorld;
-		objectBox.Transform(objectBoxWorld, _WorldMatrices[i]);
-
-		// Perform ray-box intersection
 		float distance = 0.0f;
-		if (playerRay.Intersects(objectBoxWorld, distance)) {
-			if (distance >= 0.0f && distance <= maxViewDistance) {
-				return true;
+
+		// Use the Transformed BoundingBox for intersection
+		if (obj.transformedBoundingBox.Intersects(rayOrigin, rayDirection, distance)) {
+			// Only consider intersections beyond the epsilon distance
+			if (distance > epsilon && distance < closestDistance) {
+				closestDistance = distance;
+				closestObject = &obj;
 			}
 		}
 	}
 
-	// No wall or floor is within the player's view
-	return false;
+	return closestObject;
 }
+
+
+
+
+
+

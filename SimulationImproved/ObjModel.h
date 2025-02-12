@@ -14,8 +14,9 @@ struct ObjModel {
     std::vector<WORD> indices;
     ID3D11ShaderResourceView* textureRV = nullptr;
     ID3D11ShaderResourceView* diffuse_map = nullptr;
-    BoundingBox boundingBox;
-
+    BoundingBox boundingBox;               // Original Bounding Box (Model Space)
+    BoundingBox transformedBoundingBox;    // Transformed Bounding Box (World Space)
+	std::string name;
     // Default constructor
     ObjModel() = default;
 

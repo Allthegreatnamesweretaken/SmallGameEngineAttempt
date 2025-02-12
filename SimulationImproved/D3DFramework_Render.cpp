@@ -70,19 +70,19 @@ void D3DFramework::updateWorldMatrix(float deltaTime) {
 	//Flipped
 	if (_isOnSurface)
 	{
-		if (_decelerateForward) {
-			_firstObjectHorizontalVelocity = _firstObjectHorizontalVelocity * _decelerationFactor;
+	//	if (_decelerateForward) {
+	//		_firstObjectHorizontalVelocity = _firstObjectHorizontalVelocity * _decelerationFactor;
 
-			//fun
-			//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
+	//		//fun
+	//		//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
 
-		}
+	//	}
 
 
-		if (_decelerateForward) {
-			_firstObjectHorizontalVelocityZ = _firstObjectHorizontalVelocityZ * _decelerationFactor;
-		}
-	}
+	//	if (_decelerateForward) {
+	//		_firstObjectHorizontalVelocityZ = _firstObjectHorizontalVelocityZ * _decelerationFactor;
+	//	}
+	//}
 	
 		//fun
 		//_firstObjectPosition.x -= _firstObjectHorizontalVelocity / deltaTime;
@@ -143,6 +143,8 @@ void D3DFramework::updateWorldMatrix(float deltaTime) {
 
 		BoundingBox transformedBox;
 		otherObjectBox.Transform(transformedBox, _WorldMatrices[i]);
+
+		_models[i].transformedBoundingBox = transformedBox;
 
 		if (firstObjectBox.Intersects(transformedBox)) {
 			if (_firstObjectPosition.y > transformedBox.Center.y + transformedBox.Extents.y &&
@@ -219,6 +221,12 @@ void D3DFramework::render() {
 
 	// Update the light direction based on the current mode
 	updateLightDirection();
+
+	// Detect if the player is looking at an object
+	ObjModel* lookingAtObject = getLookingAtObject(1000.0f); // Adjust maxDistance as needed
+	bool isLookingAtObject = (lookingAtObject != nullptr);
+	std::string lookingAtObjectName = isLookingAtObject ? (lookingAtObject->name.empty() ? "Unnamed Object" : lookingAtObject->name) : "None";
+
 
 	//When the sahders are set properly i will be able to fix these.
 	_pImmediateContext->ClearRenderTargetView(_pRenderTargetView, DirectX::Colors::MidnightBlue);
@@ -342,6 +350,21 @@ void D3DFramework::render() {
 	if (ImGui::BeginTabBar("Control Tabs")) {
 		if (ImGui::BeginTabItem("Camera Controls")) {
 			ImGui::Checkbox("Track First Object", &_trackFirstObject);
+			if (isLookingAtObject) {
+				// Display the name of the object being looked at
+				ImGui::Text("Looking at Object: %s", lookingAtObjectName.c_str());
+
+				// Optionally, display additional information
+				// For example, distance to the object
+				DirectX::XMVECTOR origin = DirectX::XMLoadFloat3(&_firstObjectPosition);
+				DirectX::XMVECTOR target = DirectX::XMLoadFloat3(&lookingAtObject->boundingBox.Center);
+				DirectX::XMVECTOR diff = DirectX::XMVectorSubtract(target, origin);
+				float distance = DirectX::XMVectorGetX(DirectX::XMVector3Length(diff));
+				ImGui::Text("Distance: %.2f units", distance);
+			}
+			else {
+				ImGui::Text("Not looking at any object.");
+			}
 			ImGui::Checkbox("Make them spin?", &spinnning);
 			if (ImGui::InputFloat3("Light Direction", reinterpret_cast<float*>(&_lightDirection))) {
 				if (!_isFlashlightMode) {

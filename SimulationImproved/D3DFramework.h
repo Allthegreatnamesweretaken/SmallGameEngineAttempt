@@ -24,6 +24,9 @@ using namespace DirectX;
 //--------------------------------------------------------------------------------------
 // Structures
 //--------------------------------------------------------------------------------------
+
+
+
 struct SimpleVertex
 {
 	XMFLOAT3 Pos;
@@ -126,6 +129,9 @@ public:
 	D3DFramework& operator=(D3DFramework&) = delete;
 	D3DFramework& operator=(D3DFramework&&) = delete;
 	~D3DFramework();
+
+	//Test
+	ObjModel* getLookingAtObject(float maxDistance = 10.0f);
 	
 	static D3DFramework& getInstance() { return *_instance; }
 
@@ -206,7 +212,7 @@ private:
 	void processMouseInput(float deltaTime);
 	void processKeyboardInput(float deltaTime);
    
-	bool isPlayerLookingAtWallOrFloor();
+	//bool isPlayerLookingAtWallOrFloor();
 
 	bool cursor = true;
 

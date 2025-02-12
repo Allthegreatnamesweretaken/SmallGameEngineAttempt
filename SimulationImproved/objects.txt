@@ -12,5 +12,9 @@ name Dirtland.obj
 texture ground.dds
 position 0.0 0.0 0.0
 
+name BuildingOne.obj
+texture BuildingOne.dds
+position 10.0 0.0 0.0
+
 player_position 1.0 1.0 0.0
 light_direction -0.577 0.577 -0.577
